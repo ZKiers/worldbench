@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->foreignId('location_id')->nullable();
-            $table->boolean('public')->default(false);
+            $table->string('map')->nullable();
         });
     }
 
