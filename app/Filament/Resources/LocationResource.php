@@ -7,8 +7,10 @@ use App\Filament\Resources\LocationResource\RelationManagers;
 use App\Models\Location;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Actions\Action;
 use Filament\Infolists\Components\Group;
 use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
@@ -17,7 +19,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class LocationResource extends Resource
 {
@@ -33,15 +34,21 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required(),
                 Forms\Components\FileUpload::make('map')
-                    ->image(),
+                    ->image()
+                    ->imageEditor(),
                 Forms\Components\RichEditor::make('description')
                     ->required(),
+                Forms\Components\Select::make('location_id')
+                    ->relationship('location')
+                    ->options(Location::all()->pluck('name', 'id'))
+                    ->searchable()
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn(Builder $query): Builder => $query->whereNull('location_id'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
             ])
@@ -63,10 +70,32 @@ class LocationResource extends Resource
     {
         return $infolist->schema([
             Section::make()->schema([
-                ImageEntry::make('map')
-                    ->label(''),
-                TextEntry::make('description')
-                    ->html(),
+                Split::make([
+                    Group::make([
+                        TextEntry::make('description')
+                            ->html()
+                            ->label(fn(Location $location): string => $location->name),
+                        RepeatableEntry::make('locations')
+                            ->schema([
+                                TextEntry::make('description')
+                                    ->html()
+                                    ->label(fn(Location $location): string => $location->name)
+                                    ->hintAction(
+                                        function(Location $location): Action {
+                                            return Action::make('view')
+                                                ->url(self::getUrl('view', ['record' => $location]))
+                                                ->icon('heroicon-o-eye')
+                                                ->label(false);
+                                        }
+                                    )
+                            ])
+                            ->label('Points of interest')
+                    ]),
+                    ImageEntry::make('map')
+                        ->label(false)
+                        ->height(800)
+                        ->maxWidth(600),
+                ])
             ])
         ]);
     }
@@ -76,6 +105,21 @@ class LocationResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getSubLocations(Location $location): array
+    {
+        $entries = [];
+        $location->loadMissing('locations');
+        foreach($location->locations as $pointOfInterest) {
+            $entries[] = TextEntry::make($pointOfInterest->name)
+                ->state($pointOfInterest->description)
+                ->html();
+            $entries[] = ImageEntry::make($pointOfInterest->name . '_map')
+                ->label(false)
+                ->state($pointOfInterest->map);
+        }
+        return $entries;
     }
 
     public static function getPages(): array

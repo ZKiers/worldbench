@@ -15,4 +15,12 @@ class ViewLocation extends ViewRecord
     {
         return $this->getRecord()->name;
     }
+
+    public function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make()
+                ->hidden(!auth()->user()->admin)
+        ];
+    }
 }
