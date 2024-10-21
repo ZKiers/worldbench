@@ -85,11 +85,12 @@ class LocationResource extends Resource
                                     )
                             ])
                             ->label('Points of interest')
+                            ->hidden(fn(Location $location): bool => $location->locations->count() == 0)
                     ]),
                     ImageEntry::make('map')
                         ->label(false)
-                        ->height(800)
-                        ->maxWidth(600),
+                        ->height('100%')
+                        ->width('100%'),
                 ])
             ])
         ]);
