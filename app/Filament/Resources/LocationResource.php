@@ -24,8 +24,8 @@ class LocationResource extends Resource
 {
     protected static ?string $model = Location::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-map';
-    protected static ?string $activeNavigationIcon = 'heroicon-s-map';
+    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+    protected static ?string $activeNavigationIcon = 'heroicon-s-map-pin';
 
     public static function form(Form $form): Form
     {
@@ -58,11 +58,6 @@ class LocationResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make()
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 
