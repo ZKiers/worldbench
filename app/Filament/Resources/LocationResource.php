@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LocationResource\Pages;
 use App\Filament\Resources\LocationResource\RelationManagers;
+use App\Models\Character;
 use App\Models\Location;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -33,9 +34,6 @@ class LocationResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required(),
-                Forms\Components\FileUpload::make('map')
-                    ->image()
-                    ->imageEditor(),
                 Forms\Components\RichEditor::make('description')
                     ->required(),
                 Forms\Components\Select::make('location_id')
@@ -76,7 +74,7 @@ class LocationResource extends Resource
                                     ->html()
                                     ->label(fn(Location $location): string => $location->name)
                                     ->hintAction(
-                                        function(Location $location): Action {
+                                        function (Location $location): Action {
                                             return Action::make('view')
                                                 ->url(self::getUrl('view', ['record' => $location]))
                                                 ->icon('heroicon-o-eye')
@@ -85,12 +83,24 @@ class LocationResource extends Resource
                                     )
                             ])
                             ->label('Points of interest')
-                            ->hidden(fn(Location $location): bool => $location->locations->count() == 0)
+                            ->hidden(fn(Location $location): bool => $location->locations->count() == 0),
+                        RepeatableEntry::make('characters')
+                            ->schema([
+                                TextEntry::make('background')
+                                    ->label(fn(Character $character): string => $character->name)
+                                    ->columnSpan(3)
+                                    ->html(),
+                                ImageEntry::make('portrait')
+                                    ->columnSpan(1)
+                                    ->size('100%')
+                                    ->label(false)
+                            ])
+                            ->columns(4)
+                            ->hidden(fn(Location $location): bool => $location->characters->count() == 0)
                     ]),
                     ImageEntry::make('map')
                         ->label(false)
-                        ->height('100%')
-                        ->width('100%'),
+                        ->size('100%'),
                 ])
             ])
         ]);
@@ -107,7 +117,7 @@ class LocationResource extends Resource
     {
         $entries = [];
         $location->loadMissing('locations');
-        foreach($location->locations as $pointOfInterest) {
+        foreach ($location->locations as $pointOfInterest) {
             $entries[] = TextEntry::make($pointOfInterest->name)
                 ->state($pointOfInterest->description)
                 ->html();

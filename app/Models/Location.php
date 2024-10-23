@@ -31,4 +31,9 @@ class Location extends Model
             get: fn(): string => $this->maps->pluck('image')->first() ?? ''
         );
     }
+
+    public function characters(): HasMany
+    {
+        return $this->hasMany(Character::class);
+    }
 }
