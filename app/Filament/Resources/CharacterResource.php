@@ -42,7 +42,8 @@ class CharacterResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('location.name')
             ])
             ->filters([
                 //
