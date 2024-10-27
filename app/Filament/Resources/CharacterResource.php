@@ -6,6 +6,7 @@ use App\Filament\Resources\CharacterResource\Pages;
 use App\Filament\Resources\CharacterResource\RelationManagers;
 use App\Models\Character;
 use App\Models\Location;
+use App\Models\StatBlock;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -34,6 +35,10 @@ class CharacterResource extends Resource
                 Forms\Components\Select::make('location_id')
                     ->relationship('location')
                     ->options(Location::all()->pluck('name', 'id'))
+                    ->searchable(),
+                Forms\Components\Select::make('stat_block_id')
+                    ->relationship('statBlock')
+                    ->options(StatBlock::all()->pluck('name', 'id'))
                     ->searchable()
             ]);
     }

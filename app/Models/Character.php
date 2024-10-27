@@ -11,4 +11,9 @@ class Character extends Model
     {
         return $this->belongsTo(Location::class);
     }
+
+    public function statBlock(): BelongsTo
+    {
+        return $this->belongsTo(StatBlock::class);
+    }
 }
