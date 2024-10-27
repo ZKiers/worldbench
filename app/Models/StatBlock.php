@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class StatBlock extends Model
 {
@@ -27,5 +28,10 @@ class StatBlock extends Model
                 return implode(',', $blocks);
             }
         );
+    }
+
+    public function features(): BelongsToMany
+    {
+        return $this->belongsToMany(Feature::class);
     }
 }

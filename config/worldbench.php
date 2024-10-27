@@ -8,4 +8,9 @@ return [
         'wis' => 'wisdom',
         'cha' => 'charisma',
     ],
+    'feature_types' => [
+        'action' => 'Action',
+        'bonus_action' => 'Bonus action',
+        'reaction' => 'Reaction'
+    ]
 ];

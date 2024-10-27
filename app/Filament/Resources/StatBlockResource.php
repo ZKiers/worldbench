@@ -46,7 +46,12 @@ class StatBlockResource extends Resource
                     return $schema;
                 })
                 ->columns(count(config('worldbench.stats')))
-                ->columnSpan(2)
+                ->columnSpan(2),
+                Forms\Components\Select::make('features')
+                    ->relationship('features', 'title')
+                    ->searchable()
+                    ->preload()
+                    ->multiple()
             ]);
     }
 
