@@ -7,7 +7,13 @@ use App\Filament\Resources\StatBlockResource\RelationManagers;
 use App\Models\StatBlock;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\Group;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -66,11 +72,46 @@ class StatBlockResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Group::make([
+                    Fieldset::make('Survivability')
+                        ->schema([
+                            TextEntry::make('armor_class')
+                                ->inlineLabel(),
+                            TextEntry::make('hit_points')
+                                ->inlineLabel(),
+                            TextEntry::make('speed')
+                                ->suffix(' ft.')
+                                ->inlineLabel(),
+                        ])
+                        ->label(false)
+                        ->columns(1),
+                    Fieldset::make('Ability Scores')
+                        ->schema(function(StatBlock $statBlock): array {
+                            $schema = [];
+                            foreach($statBlock->stats as $key => $value) {
+                                $schema[] = TextEntry::make('stats.' . $key)
+                                    ->state($statBlock->getStatString($key))
+                                    ->label(ucfirst($key));
+                            }
+                            return $schema;
+                        })
+                        ->columns(6)
+                ])
+                ->columns(1)
+                ->columnSpan(1)
             ]);
     }
 
@@ -87,6 +128,7 @@ class StatBlockResource extends Resource
             'index' => Pages\ListStatBlocks::route('/'),
             'create' => Pages\CreateStatBlock::route('/create'),
             'edit' => Pages\EditStatBlock::route('/{record}/edit'),
+            'view' => Pages\ViewStatBlock::route('/{record}'),
         ];
     }
 }
