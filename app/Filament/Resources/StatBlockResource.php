@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StatBlockResource\Pages;
 use App\Filament\Resources\StatBlockResource\RelationManagers;
+use App\Models\Feature;
 use App\Models\StatBlock;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -41,6 +42,9 @@ class StatBlockResource extends Resource
                 Forms\Components\TextInput::make('speed')
                     ->numeric()
                     ->required(),
+                Forms\Components\TextInput::make('proficiency')
+                    ->numeric()
+                    ->required(),
                 Forms\Components\Split::make(function() {
                     $schema = [];
                     foreach(config('worldbench.stats') as $key => $name) {
@@ -53,6 +57,9 @@ class StatBlockResource extends Resource
                 })
                 ->columns(count(config('worldbench.stats')))
                 ->columnSpan(2),
+                Forms\Components\Select::make('saving_throws')
+                    ->options(config('worldbench.stats'))
+                    ->multiple(),
                 Forms\Components\Select::make('features')
                     ->relationship('features', 'title')
                     ->searchable()
@@ -95,6 +102,9 @@ class StatBlockResource extends Resource
                             TextEntry::make('speed')
                                 ->suffix(' ft.')
                                 ->inlineLabel(),
+                            TextEntry::make('proficiency')
+                                ->prefix('+')
+                                ->inlineLabel(),
                         ])
                         ->label(false)
                         ->columns(1),
@@ -108,7 +118,28 @@ class StatBlockResource extends Resource
                             }
                             return $schema;
                         })
-                        ->columns(6)
+                        ->columns(6),
+                    Fieldset::make('Saving Throws')
+                        ->schema(function(StatBlock $statBlock): array {
+                            $schema = [];
+                            foreach($statBlock->saving_throw_modifiers as $name => $modifier) {
+                                $schema[] = TextEntry::make('saving_throw_modifiers.' . $name)
+                                    ->label(ucfirst($name));
+                            }
+                            return $schema;
+                        })
+                        ->columns(6),
+                    Fieldset::make('Features')
+                        ->schema([
+                            RepeatableEntry::make('features')
+                                ->schema([
+                                    TextEntry::make('description')
+                                        ->label(fn(Feature $feature): string => ucfirst($feature->type) . ": {$feature->title}")
+                                        ->html()
+                                ])
+                                ->label(false)
+                                ->contained(false),
+                        ])->columns(1)
                 ])
                 ->columns(1)
                 ->columnSpan(1)

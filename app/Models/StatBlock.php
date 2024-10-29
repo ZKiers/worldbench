@@ -32,24 +32,51 @@ class StatBlock extends Model
 
     public function getStatModifiersAttribute(): array
     {
-        $stats = $this->stats;
         $modifiers = [];
 
         $baseline = config('worldbench.modifier.baseline');
         $step = config('worldbench.modifier.step');
 
-        foreach($stats as $name => $value) {
+        foreach($this->stats as $name => $value) {
             $modifiers[$name] = floor(($value - $baseline) / $step);
         }
         return $modifiers;
+    }
+
+    protected function savingThrows(): Attribute
+    {
+        return Attribute::make(
+            get: function(?string $value = ''): array|null {
+                $savingThrows = explode(',', $value);
+                return is_array($savingThrows) ? $savingThrows : null;
+            },
+            set: function(array $savingThrows): string {
+                return implode(',', $savingThrows);
+            }
+        );
+    }
+
+    public function getSavingThrowModifiersAttribute(): array
+    {
+        $savingThrowModifiers = [];
+        foreach($this->statModifiers as $name => $modifier) {
+            $savingThrowModifiers[$name] = $this->addScorePrefix(
+                in_array($name, $this->saving_throws) ? $modifier + $this->proficiency : $modifier
+            );
+        }
+        return $savingThrowModifiers;
     }
 
     public function getStatString(string $stat): string
     {
         $score = $this->stats[$stat];
         $modifier = $this->stat_modifiers[$stat];
-        $prefix = $modifier < 0 ? '' : '+';
-        return "{$score} ({$prefix}{$modifier})";
+        return "{$score} ({$this->addScorePrefix($modifier)})";
+    }
+
+    public function addScorePrefix(int $score): string
+    {
+        return $score < 0 ? $score : "+{$score}";
     }
 
     public function features(): BelongsToMany
